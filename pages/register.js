@@ -37,7 +37,6 @@ class Inputs extends React.Component {
    /*async componentDidMount(){
       const { TextInputEmail }  = this.state ;
       const { TextInputPassword }  = this.state ;
-
       let formData = new formData();
       formData.append('Email',TextInputEmail);
       formData.append('Password',TextInputPassword);
@@ -57,7 +56,6 @@ class Inputs extends React.Component {
       }catch(e){
          console.log(e);
       }
-
    }*/
    uploadData(){
       const { TextInputEmail }  = this.state ;

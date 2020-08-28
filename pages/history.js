@@ -256,7 +256,7 @@ export default class history extends Component {
                         }}
 
                         centerComponent={{
-                            text: '歷史錄音',
+                            text: '語音列表',
                             style: {
                                 fontSize: 20,
                                 fontWeight: 'bold',
@@ -309,7 +309,7 @@ export default class history extends Component {
                                                     if(l.changename){
                                                         navigation.navigate('播放', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""),showname:(l.anothername) })
                                                     }else{
-                                                        navigation.navigate('播放', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""),showname:(l.name.replace("name-", "")).replace(".awb", ""), })
+                                                        navigation.navigate('文字稿', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""),showname:(l.name.replace("name-", "")).replace(".awb", ""), })
                                                     }
                                                    
                                                 }}
@@ -373,7 +373,7 @@ export default class history extends Component {
                                                 }}
                                                 onPress={() => {
                                                     if(l.changename){
-                                                        navigation.navigate('播放', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""),showname:(l.anothername) })
+                                                        navigation.navigate('文字稿', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""),showname:(l.anothername) })
                                                     }else{
                                                         navigation.navigate('播放', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""),showname:(l.name.replace("name-", "")).replace(".awb", "") })
                                                     }
