@@ -169,11 +169,12 @@ export default class App extends React.Component {
         let { play, pause } = this.state;
 
             return (
-                < ScrollView refreshControl={
-                    < RefreshControl
-                        refreshing={this.state.refreshing}
-                        onRefresh={this._onRefresh}
-                    />}
+                < ScrollView 
+                // refreshControl={
+                //     < RefreshControl
+                //         refreshing={this.state.refreshing}
+                //         onRefresh={this._onRefresh}
+                //     />}
                 >
                   <View style={{flex:1}}>
                     <Header
@@ -186,7 +187,7 @@ export default class App extends React.Component {
                         }}
 
                         centerComponent={{
-                            text: this.props.route.params.name,
+                            text: this.props.route.params.showname,
                             style: {
                                 fontSize: 22,
                                 fontWeight: 'bold',
@@ -231,9 +232,9 @@ export default class App extends React.Component {
                         </View>
                     </View>
                     
-                    <View >
+                    <View style={{ flex: 1}} >
                         {/* <Text style={{textAlign:'center', fontSize:20, fontWeight:"bold", padding:30}}>Network Error!!!</Text> */}
-                        <Text style={{textAlign:'center', marginTop:30, fontSize:15, color:"grey"}}>尚未完成音檔上傳！</Text>
+                        <Text style={{textAlign:'center', marginTop:30, fontSize:15, color:"grey"}}>音檔尚未上傳！</Text>
                     </View>   
                 
                   </View>

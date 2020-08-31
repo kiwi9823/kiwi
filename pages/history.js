@@ -256,7 +256,7 @@ export default class history extends Component {
                         }}
 
                         centerComponent={{
-                            text: '語音列表',
+                            text: '歷史錄音',
                             style: {
                                 fontSize: 20,
                                 fontWeight: 'bold',
@@ -306,12 +306,12 @@ export default class history extends Component {
                                                     }
                                                 }}
                                                 onPress={() => {
-                                                    if(l.changename){
-                                                        navigation.navigate('播放', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""),showname:(l.anothername) })
-                                                    }else{
-                                                        navigation.navigate('文字稿', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""),showname:(l.name.replace("name-", "")).replace(".awb", ""), })
+                                                    if (l.changename) {
+                                                        navigation.navigate('文字稿', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""), showname: (l.anothername) })
+                                                    } else {
+                                                        navigation.navigate('文字稿', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""), showname: (l.name.replace("name-", "")).replace(".awb", ""), })
                                                     }
-                                                   
+
                                                 }}
 
                                                 onLongPress={() => {
@@ -364,7 +364,14 @@ export default class history extends Component {
                                             <ListItem
                                                 key={i}
                                                 leftIcon={{ name: 'mic' }}
-                                                title={(l.name.replace("name-", "")).replace(".awb", "")}
+                                                title={() => {
+                                                    if (!l.changename) {
+                                                        return <Text>{(l.name.replace("name-", "")).replace(".awb", "")}</Text>
+                                                    } else {
+                                                        return <Text>{l.anothername}</Text>
+                                                    }
+                                                }
+                                                }
                                                 subtitle={l.subtitle}
                                                 bottomDivider
                                                 rightIcon={{
@@ -372,12 +379,12 @@ export default class history extends Component {
                                                     type: 'ionicon',
                                                 }}
                                                 onPress={() => {
-                                                    if(l.changename){
-                                                        navigation.navigate('文字稿', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""),showname:(l.anothername) })
-                                                    }else{
-                                                        navigation.navigate('播放', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""),showname:(l.name.replace("name-", "")).replace(".awb", "") })
+                                                    if (l.changename) {
+                                                        navigation.navigate('文字稿', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""), showname: (l.anothername) })
+                                                    } else {
+                                                        navigation.navigate('文字稿', { url: l.path, time: 5, name: (l.name.replace("name-", "")).replace(".awb", ""), showname: (l.name.replace("name-", "")).replace(".awb", "") })
                                                     }
-                                                   
+
                                                 }}
                                                 onLongPress={() => {
 
