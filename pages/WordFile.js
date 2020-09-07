@@ -7,8 +7,6 @@ import { BottomNavigation, Text, FAB, Portal, Provider } from 'react-native-pape
 import RNFS from 'react-native-fs';
 import { cos } from 'react-native-reanimated';
 
-
-
 let whoosh;
 
 export default class App extends React.Component {
@@ -31,22 +29,25 @@ export default class App extends React.Component {
             summ_data: [],
             trans: [],
             trans_data: [],
-            isLoading: true,
-            // hasPermission: undefined,
+            transInputDisableHolder:false,
+            summInputDisableHolder:false,
+            borderStatus: false ,
+            textTrans:'',
+            textSumm:'',
+
+            isLoading: false,
             index: 0,
             routes: [
                 { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
                 { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
             ],
             response: [],
-            numberOfsummary: '5',
+            numberOfsummary: 'EX: "5"',
             text: '',
-            // OldnumberOfsummary: '5',
         };
     }
 
     async componentDidMount() {
-
         //音檔位置
         let url = this.props.route.params.url;
         //初始化
@@ -72,11 +73,10 @@ export default class App extends React.Component {
 
         /*用server資料的時候*/
         let formData = new FormData();
-        // let filename = datas;
-        formData.append('userName', 'testClient');
-        formData.append('fileName', this.props.route.params.name);
+            formData.append('userName', 'testClient');
+            formData.append('fileName', this.props.route.params.name);
 
-        const response = fetch(`http://140.115.81.199:9943/textFetch/${this.state.numberOfsummary}`,
+        const response = fetch(`http://140.115.81.199:9943/textFetch`,
             {
                 method: 'POST',
                 // headers: {
@@ -87,59 +87,44 @@ export default class App extends React.Component {
             })
             .then((resp) => { return resp.json() })
             .then((json) => {
-                console.log(json)
+                console.log("JSONSUMhere"+json.summary)
 
-                //Transcript
+                    //Transcript
                 // const transSTR = JSON.stringify(json.transcript);
                 // const transdata = transSTR.replace(/\\/g, ""); 
                 // const joinT = transdata.split("n"); 
                 // const replaceT=joinT.join(`\n`);
                 // const transData = replaceT.slice(1,-1); 
-
                 const transSTR = JSON.stringify(json.transcript).replace(/\\/g, "").split("n").join(`\n`);
                 const transData = transSTR.slice(1, -1);
 
-                //Summary
+                    //Summary
                 // const summSTR = JSON.stringify(json.summary);     //"我n愛n你"
                 // const summdata = summSTR.split("n");              //“我，愛，你”
                 // const joinS = summdata.join(`\n`);                //“我    愛     你”
                 // const summData = joinS.slice(1,-1);               //我    愛     你
-                const summSTR = JSON.stringify(json.summary).replace(/\\/g, "").split("n").join(`\n` + "- ");
-                const summData = summSTR.replace(/['"]+/g, "- ").slice(0, -4);
+                // const summSTR = JSON.stringify(json.summary).replace(/\\/g, "").split("n").join(`\n` + "- ");
+                // const summData = summSTR.replace(/['"]+/g, "- ").slice(0, -4);
+                //.replace(/\s/g, '') for space .replace(/\\/g, "") for slash(\) .replace(/-/g, "") for hyphen(-)
+                const summSTR = JSON.stringify(json.summary).replace(/-/g, "").replace(/\s/g, "").split('\\n').join(`\n` + "- ")
+                const summData = ("- "+summSTR.replace(/['"]+/g, ""))
 
-                this.setState({ summ: json.summary, summ_data: summData, trans: json.transcript, trans_data: transData, isLoading: false, visible: true });
+                this.setState({ summ: json.summary, summ_data: summData, trans: json.transcript, trans_data: transData, isLoading: true });
             });
 
-        //   console.log(response)    
-        // const json = await response.json(); 
 
-        /*用假資料的時候*/
-        //     const response = await fetch('https://gist.githubusercontent.com/kiwi9823/2cf7242d8f10b04e77aa72acd246462e/raw/25cc4626632c65cea58499e58d6b005eac4bb366/test.json');
+
+        // /*用假資料的時候*/
+        //     const response = await fetch('https://gist.githubusercontent.com/kiwi9823/2cf7242d8f10b04e77aa72acd246462e/raw/4199f0a385da9a5585462f262d4de48d8a882beb/test.json');
         //     const json = await response.json();
-        //    //Transcript
-        //         const transSTR = JSON.stringify(json.transcript);console.log("11"+transSTR);
-        //         const transdata = transSTR.replace("n","");console.log("22"+transdata);
-        //         const transData = transdata.slice(1,-1); console.log("33"+transData);
-        //         //Summary
-        //         const summSTR = JSON.stringify(json.summary);console.log("11"+summSTR);
-        //         const summdata = summSTR.split("n");console.log("22"+summdata);
-        //         const joinS = summdata.join("");console.log("2"+joinS);
 
-        //         const summdata2 = joinS.slice("'\'");console.log("33"+summdata2);
-        //         const joinS2 = summdata2.join("");console.log("3"+joinS2);
-        //         const summData = joinS2.slice(1,-1);console.log("44"+summData);
-        //         this.setState({summ:json.summary, summ_data: summData, trans:json.transcript, trans_data: transData, isLoading:false, visible:true});
+        //         const transSTR = JSON.stringify(json.transcript).replace(/\\/g, "").split("n").join(`\n`);
+        //         const transData = transSTR.slice(1, -1);
 
+        //         const summSTR = JSON.stringify(json.summary).replace(/\\/g, "").split("n").join(`\n` + "- ").replace("-","");
+        //         const summData = summSTR.replace(/['"]+/g, "- ").slice(0, -4);
 
-        // const response = await fetch('https://gist.githubusercontent.com/kiwi9823/14334bca028cebadde46437052504410/raw/eab818df1a12784ca8229613cba35a43af59cce2/22test.json');
-        // const json = await response.json();
-        // //Transcript
-        // const transSTR = JSON.stringify(json.transcript);
-        // const transData = transSTR.slice(1,-1); console.log(transSTR.slice(1,-1));
-        // //Summary
-        // const summSTR = JSON.stringify(json.summary);
-        // const summData = summSTR.slice(19,-3); console.log(summSTR.slice(19,-3));
-        // this.setState({ summ: json.summary, summ_data: summData,trans_data: transData, isLoading:false, visible:true});
+        //         this.setState({ summ: json.summary, summ_data: summData, trans: json.transcript, trans_data: transData, isLoading: false, visible: true });
     }
 
     componentWillUnmount() {
@@ -147,8 +132,19 @@ export default class App extends React.Component {
     }
 
     backAction = async () => {
+        this._stop();
         this.props.navigation.navigate('歷史紀錄');
         this.setState({
+            // volume: 0.5,
+            // seconds: 0, //秒數
+            // totalMin: '', //總分鐘
+            // totalSec: '', //總秒數
+            // nowMin: 0, //目前分鐘
+            // nowSec: 0, //目前秒鐘
+            // maximumValue: 0, //滑輪直
+            // play: false,
+            // pause: false,
+            // resume: false,
             play: false,
             pause: false,
             resume: false,
@@ -160,20 +156,24 @@ export default class App extends React.Component {
             summ_data: [],
             trans: [],
             trans_data: [],
-            isLoading: true,
-            // hasPermission: undefined,
+            transInputDisableHolder:false,
+            summInputDisableHolder:false,
+            borderStatus:false,
+            textTrans:'',
+            textSumm:'',
+            
+            isLoading: false,
             index: 0,
             routes: [
                 { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
                 { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
             ],
             response: [],
-            numberOfsummary: '5',
+            numberOfsummary: 'EX: "5"',
             text: '',
         })
         clearInterval(this.time);
-
-        console.log("pause" + this.state.summ_data)
+        console.log("close")
         whoosh.pause();
     };
 
@@ -266,27 +266,184 @@ export default class App extends React.Component {
         })
     }
 
+    onChangedTrans(text) {
+        console.log("Transcript Editing")
+        let newText = '';
+
+        for (var i = 0; i < text.length; i++) {
+                newText = newText + text[i];
+            }
+        this.setState({ textTrans: newText });
+    }
+
+    editTrans = () => {
+        console.log("Trans Editable")
+        this.setState({ transInputDisableHolder: true, borderStatus: true}) 
+    }
+
+    saveTrans = () => {
+        console.log('Save transEdit')
+        this.setState({transInputDisableHolder:false, borderStatus: false})
+
+        if(this.state.textTrans === ''){
+            let formData = new FormData();
+            formData.append('userName', 'testClient');
+            formData.append('fileName', this.props.route.params.name);
+            formData.append('modCont', this.state.trans_data);                    
+
+                fetch(`http://140.115.81.199:9943/transUpdate`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    console.log("saveTrans"+response.status);
+                })
+                .catch(error => {
+                    console.log("error", error)
+                })
+                this.setState({
+                    summ: [],
+                    summ_data: [],
+                    trans: [],
+                    trans_data: [],
+                    textTrans:'',
+                    textSumm:'',
+                    isLoading: false,
+                    routes: [
+                        { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
+                        { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
+                    ],
+                    response: [],
+                })
+                this.componentDidMount()
+                    .then(() => {
+                        this.setState({ refreshing: false });
+                    });
+                this.wait(5000).then(() => {
+                    this.setState({ refreshing: false });
+                    //Alert message
+                });
+        }
+        else{
+            let formData = new FormData();
+                formData.append('userName', 'testClient');
+                formData.append('fileName', this.props.route.params.name);
+                formData.append('modCont', this.state.textTrans);                    
+
+            fetch(`http://140.115.81.199:9943/transUpdate`,
+            {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'multipart/form-data'
+                },
+                body: formData
+            })
+            .then(response => {
+                console.log("saveTrans"+response.status);
+            })
+            .catch(error => {
+                console.log("error", error)
+            })
+            this.setState({
+                summ: [],
+                summ_data: [],
+                trans: [],
+                trans_data: [],
+                textTrans:'',
+                textSumm:'',
+                isLoading: false,
+                routes: [
+                    { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
+                    { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
+                ],
+                response: [],
+            })
+            this.componentDidMount()
+                .then(() => {
+                    this.setState({ refreshing: false });
+                });
+            this.wait(5000).then(() => {
+                this.setState({ refreshing: false });
+                //Alert message
+            });
+        }   
+    }
+
+    trans_download = () => {
+        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE)
+        // create a path you want to write to
+        // :warning: on iOS, you cannot write into `RNFS.MainBundlePath`,
+        // but `RNFS.DocumentDirectoryPath` exists on both platforms and is writable
+        var date = new Date().getDate(); //To get the Current Date
+        var month = new Date().getMonth() + 1; //To get the Current Month
+        var year = new Date().getFullYear(); //To get the Current Year
+        var hours = new Date().getHours(); //To get the Current Hours
+        var min = new Date().getMinutes(); //To get the Current Minutes
+
+        var path = RNFS.DownloadDirectoryPath + `/trans${this.props.route.params.name}_${year}${month}${date}_${hours}${min}.txt`;
+        console.log(path);
+        // write the file
+        RNFS.writeFile(path, this.state.trans_data, 'utf8')
+            // RNFS.writeFile(path, this.state.tran, 'utf8')
+            .then((success) => {
+                Alert.alert(
+                    "Download File",
+                    "Success!",
+                    [
+                        // {
+                        //   text: "Cancel",
+                        //   onPress: () => console.log("Cancel Pressed"),
+                        //   style: "cancel"
+                        // },
+                        { text: "OK", onPress: () => console.log("Transcript Download Success") }
+                    ],
+                    { cancelable: false }
+                );
+                console.log('FILE WRITTEN!');
+            })
+            .catch((err) => {
+                console.log(err.message);
+            });
+    }
+
     Transcript = () => {
         const [state, setState] = React.useState({ open: false });
         const onStateChange = ({ open }) => setState({ open });
         const { open } = state;
 
         return (
-            <SafeAreaView style={{ flex: 1, padding: 15, paddingBottom: 50 }}>
-                <View>
-                    <Text style={{ fontSize: 16 }}>{this.state.trans_data}{"\n"}</Text>
-                </View>
+            <SafeAreaView style={{ flex: 1, paddingHorizontal: 15, paddingBottom:30}}>
 
-                {/* <FlatList
-                    data={this.state.trans}
-                    extraData={state}
-                    keyExtractor={({ id }, index) => id}
-                    renderItem={({ item }) => (
-                      <View>
-                        <Text style={{ fontSize: 15 }}>{item.text}{"\n"}</Text>
-                      </View>
-                    )}
-                /> */}
+                    {
+                    // Display the content in screen when state object "content" is true.
+                    // Hide the content in screen when state object "content" is false. 
+                    this.state.transInputDisableHolder 
+                    ? 
+                        <Button
+                        title="Save Edit"
+                        type="clear"
+                        onPress={this.saveTrans}
+                        /> 
+                    : 
+                    null
+                    }
+                                
+                <ScrollView>
+                    <TextInput 
+                        onChangeText={text=> this.onChangedTrans(text)}
+                        multiline={true} 
+                        editable={this.state.transInputDisableHolder}     
+                        style={ this.state.borderStatus ? styles.editBorder : styles.transNoBorder}                                               
+                    >
+                        {this.state.trans_data+"\n"}
+                    </TextInput>
+                </ScrollView>
 
                 <Provider>
                     <Portal>
@@ -300,17 +457,7 @@ export default class App extends React.Component {
                                 {
                                     icon: 'format-title',
                                     label: 'Edit Text',
-                                    onPress: () => this.EditText(),
-                                },
-                                // {
-                                //   icon: 'format-color-highlight',
-                                //   label: 'Highlight',
-                                //   onPress: () => console.log('Pressed Hightlight'),
-                                // },
-                                {
-                                    icon: 'content-save-edit',
-                                    label: 'Save Edit',
-                                    onPress: () => console.log('Pressed save edit'),
+                                    onPress: () => this.editTrans(),
                                 },
                                 {
                                     icon: 'download',
@@ -337,67 +484,98 @@ export default class App extends React.Component {
         const onStateChange = ({ open }) => setState({ open });
         const { open } = state;
 
-        const styles = StyleSheet.create({
-            centeredView: {
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                marginTop: 22,
-            },
-            modalView: {
-                margin: 20,
-                backgroundColor: "white",
-                borderRadius: 20,
-                padding: 30,
-                alignItems: "center",
-                shadowColor: "blue",
-                shadowOffset: {
-                    width: 0,
-                    height: 2
-                },
-                shadowOpacity: 5,
-                shadowRadius: 3.84,
-                elevation: 100
-            },
-            openButton: {
-                backgroundColor: "#F194FF",
-                borderRadius: 10,
-                padding: 10,
-                elevation: 2
-            },
-            textStyle: {
-                color: "white",
-                fontWeight: "bold",
-                textAlign: "center"
-            },
-            modalText: {
-                marginBottom: 15,
-                textAlign: "center",
-                color: "black",
-                fontSize: 18,
-                fontWeight: "bold",
-            }
-        });
+        // const styles = StyleSheet.create({
+        //     centeredView: {
+        //         flex: 1,
+        //         justifyContent: "center",
+        //         alignItems: "center",
+        //         marginTop: 22,
+        //     },
+        //     modalView: {
+        //         margin: 20,
+        //         backgroundColor: "white",
+        //         borderRadius: 20,
+        //         padding: 30,
+        //         alignItems: "center",
+        //         shadowColor: "blue",
+        //         shadowOffset: {
+        //             width: 0,
+        //             height: 2
+        //         },
+        //         shadowOpacity: 5,
+        //         shadowRadius: 3.84,
+        //         elevation: 100
+        //     },
+        //     openButton: {
+        //         backgroundColor: "#F194FF",
+        //         borderRadius: 10,
+        //         padding: 10,
+        //         elevation: 2
+        //     },
+        //     textStyle: {
+        //         color: "white",
+        //         fontWeight: "bold",
+        //         textAlign: "center"
+        //     },
+        //     modalText: {
+        //         marginBottom: 15,
+        //         textAlign: "center",
+        //         color: "black",
+        //         fontSize: 18,
+        //         fontWeight: "bold",
+        //     },
+        //     editBorder: {
+        //         borderColor:"lightblue",
+        //         borderWidth:2,
+        //         fontSize: 16, 
+        //         color:"black"
+        //     },
+        //     noBorder: {
+        //         borderWidth:0,
+        //         fontSize: 16, color:"black"
+        //     },
+        // });
 
         const [modalVisible, setModalVisible] = React.useState(false);
         //   const [value, onChangeText] = React.useState('');
 
         return (
-            <SafeAreaView style={{ flex: 1, padding: 15, paddingBottom: 50 }}>
-                < ScrollView refreshControl={
+            <SafeAreaView style={{ flex: 1, paddingHorizontal:15, paddingBottom: 15 }}>
+                {/* < ScrollView refreshControl={
                     < RefreshControl
                         refreshing={this.state.refreshing}
                         onRefresh={this._onRefresh}
                     />}
-                >
+                > */}
 
-                    <Text style={{ textAlign: "center", color: 'grey', paddingBottom: 10 }}>** 可在右下功能鍵中自由設定摘要句數</Text>
+                    {
+                    // Display the content in screen when state object "content" is true.
+                    // Hide the content in screen when state object "content" is false. 
+                    this.state.summInputDisableHolder 
+                    ? 
+                        <Button
+                        title="Save Edit"
+                        type="clear"
+                        onPress={this.saveSumm}
+                        /> 
+                    : 
+                    <Text style={{ textAlign: "center", color: 'grey', paddingTop:15}}>** 可在右下功能鍵中自由設定摘要句數</Text>
+                    }
 
-                    <View>
-                        <Text style={{ fontSize: 16 }}>{this.state.summ_data}{"\n"}</Text>
-                    </View>
+                    
 
+                <ScrollView>
+                    <TextInput 
+                        onChangeText={text=> this.onChangedSumm(text)}
+                        multiline={true} 
+                        editable={this.state.summInputDisableHolder}     
+                        style={this.state.borderStatus ? styles.editBorder : styles.noBorder}                              
+                    >
+                        {this.state.summ_data+"\n"}
+                    </TextInput>
                 </ScrollView>
+
+                {/* </ScrollView> */}
                 {/* <FlatList
                     data={this.state.summ}
                     extraData={state}
@@ -426,17 +604,7 @@ export default class App extends React.Component {
                                     //   icon: 'format-title',
                                     icon: 'format-title',
                                     label: 'Edit Text',
-                                    onPress: () => this.EditText(),
-                                },
-                                // {
-                                //   icon: 'format-color-highlight',
-                                //   label: 'Highlight',
-                                //   onPress: () => console.log('Pressed export'),
-                                // },
-                                {
-                                    icon: 'content-save-edit',
-                                    label: 'Save Edit',
-                                    onPress: () => console.log('Pressed save ssedit'),
+                                    onPress: () => this.editSumm(),
                                 },
                                 {
                                     icon: 'download',
@@ -476,7 +644,6 @@ export default class App extends React.Component {
                                         onPress={() => {
                                             setModalVisible(!modalVisible);
                                             this.getNumofSummary(this.state.numberOfsummary)
-                                            // this._onRefresh();
                                         }}
                                     >
                                         <Text style={styles.textStyle}>Submit</Text>
@@ -500,6 +667,7 @@ export default class App extends React.Component {
     }
 
     onChanged(text) {
+       
         let newText = '';
         let numbers = '0123456789';
 
@@ -517,13 +685,12 @@ export default class App extends React.Component {
 
     getNumofSummary = (numberOfsummary) => {
 
-        // this.setState({ OldnumberOfsummary: numberOfsummary });
+        this.setState({ refreshing: true });
         console.log(this.state.numberOfsummary);
 
         let formData = new FormData();
-        // let filename = datas;
-        formData.append('userName', 'testClient');
-        formData.append('fileName', this.props.route.params.name);
+            formData.append('userName', 'testClient');
+            formData.append('fileName', this.props.route.params.name);
 
         fetch(`http://140.115.81.199:9943/sumSet/${numberOfsummary}`,
         {
@@ -535,7 +702,7 @@ export default class App extends React.Component {
             body: formData
         })
         .then(response => {
-            console.log("1"+response.status);
+            console.log("getNumofSummary"+response.status);
         })
         .catch(error => {
             console.log("error", error)
@@ -545,113 +712,132 @@ export default class App extends React.Component {
             summ_data: [],
             trans: [],
             trans_data: [],
-            isLoading: true,
-            // hasPermission: undefined,
-            // index: 0,
+            isLoading: false,
             routes: [
                 { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
                 { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
             ],
             response: [],
         })
-        this.componentDidMount();
-
-
-        // this.componentDidMount()
-
-        // this.setState({ refreshing: true });
-        // this.componentDidMount()
-        //     .then(() => {
-        //         this.setState({ refreshing: false });
-        //     });
-        // this.wait(5000).then(() => {
-        //     this.setState({ refreshing: false });
-        //     //Alert message
-        // });
-
-        // .then(result => {
-        //     console.log("success", result)
-        //     fetch(`http://140.115.81.199:9943/textFetch/${numberOfsummary}`,
-        //         {
-        //             method: 'POST',
-        //             // headers: {
-        //             //     Accept: 'application/json',
-        //             //     'Content-Type': 'multipart/form-data'
-        //             // },
-        //             body: formData
-        //         })
-        //         .then(response => {
-        //             console.log(response.status);
-        //         })
-        //         .then((resp) => { return resp.json() })
-        //         .then((json) => {
-        //             console.log(json)
-        //             //Transcript
-        //             // const transSTR = JSON.stringify(json.transcript);
-        //             // const transdata = transSTR.replace(/\\/g, ""); 
-        //             // const joinT = transdata.split("n"); 
-        //             // const replaceT=joinT.join(`\n`);
-        //             // const transData = replaceT.slice(1,-1); 
-        //             const transSTR = JSON.stringify(json.transcript).replace(/\\/g, "").split("n").join(`\n`);
-        //             const transData = transSTR.slice(1, -1);
-        //             //Summary
-        //             // const summSTR = JSON.stringify(json.summary);     //"我n愛n你"
-        //             // const summdata = summSTR.split("n");              //“我，愛，你”
-        //             // const joinS = summdata.join(`\n`);                //“我    愛     你”
-        //             // const summData = joinS.slice(1,-1);               //我    愛     你
-        //             const summSTR = JSON.stringify(json.summary).replace(/\\/g, "").split("n").join(`\n` + "- ");
-        //             const summData = summSTR.replace(/['"]+/g, "- ").slice(0, -4);
-
-        //             this.setState({ summ: json.summary, summ_data: summData, trans: json.transcript, trans_data: transData, isLoading: false, visible: true });
-        //         })                                       
-        //         .catch(error => {
-        //             console.log("error", error)
-        //         })
-        // })
-
-    }
-
-    EditText = () => {
-        console.log('Pressed edit')
-    }
-
-    trans_download = () => {
-        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE)
-        // create a path you want to write to
-        // :warning: on iOS, you cannot write into `RNFS.MainBundlePath`,
-        // but `RNFS.DocumentDirectoryPath` exists on both platforms and is writable
-        var date = new Date().getDate(); //To get the Current Date
-        var month = new Date().getMonth() + 1; //To get the Current Month
-        var year = new Date().getFullYear(); //To get the Current Year
-        var hours = new Date().getHours(); //To get the Current Hours
-        var min = new Date().getMinutes(); //To get the Current Minutes
-
-        var path = RNFS.DownloadDirectoryPath + `/trans${this.props.route.params.name}_${year}${month}${date}_${hours}${min}.txt`;
-        console.log(path);
-        // write the file
-        RNFS.writeFile(path, this.state.trans_data, 'utf8')
-            // RNFS.writeFile(path, this.state.tran, 'utf8')
-            .then((success) => {
-                Alert.alert(
-                    "Download File",
-                    "Success!",
-                    [
-                        // {
-                        //   text: "Cancel",
-                        //   onPress: () => console.log("Cancel Pressed"),
-                        //   style: "cancel"
-                        // },
-                        { text: "OK", onPress: () => console.log("OK Pressed") }
-                    ],
-                    { cancelable: false }
-                );
-                console.log('FILE WRITTEN!');
-            })
-            .catch((err) => {
-                console.log(err.message);
+        this.componentDidMount()
+            .then(() => {
+                this.setState({ refreshing: false });
             });
+        this.wait(5000).then(() => {
+            this.setState({ refreshing: false });
+            //Alert message
+        });
     }
 
+    onChangedSumm(text) {
+        console.log("Summary Editing")
+        let newText = '';
+
+        for (var i = 0; i < text.length; i++) {
+                newText = newText + text[i];
+            }
+        this.setState({ textSumm: newText });
+    }
+
+    editSumm = () => {
+        console.log("Sum Editable")
+        this.setState({ summInputDisableHolder: true, borderStatus: true}) 
+    }
+
+    saveSumm = () => {
+        console.log('Save sumEdit')
+        this.setState({summInputDisableHolder:false, borderStatus: false})
+
+        if(this.state.textSumm === ''){
+            let formData = new FormData();
+            formData.append('userName', 'testClient');
+            formData.append('fileName', this.props.route.params.name);
+            formData.append('modCont', this.state.summ_data);                    
+
+            fetch(`http://140.115.81.199:9943/sumUpdate`,
+            {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'multipart/form-data'
+                },
+                body: formData
+            })
+            .then(response => {
+                console.log("saveSumm"+response.status);
+            })
+            .catch(error => {
+                console.log("error", error)
+            })
+            this.setState({
+                summ: [],
+                summ_data: [],
+                trans: [],
+                trans_data: [],
+                textTrans:'',
+                textSumm:'',
+                isLoading: false,
+                routes: [
+                    { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
+                    { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
+                ],
+                response: [],
+            })
+            this.componentDidMount()
+                .then(() => {
+                    this.setState({ refreshing: false });
+                });
+            this.wait(5000).then(() => {
+                this.setState({ refreshing: false });
+                //Alert message
+            });
+        }
+        else{  
+            let formData = new FormData();
+                formData.append('userName', 'testClient');
+                formData.append('fileName', this.props.route.params.name);
+                formData.append('modCont', this.state.textSumm);                    
+
+            fetch(`http://140.115.81.199:9943/sumUpdate`,
+            {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'multipart/form-data'
+                },
+                body: formData
+            })
+            .then(response => {
+                console.log("saveSumm"+response.status);
+            })
+            .catch(error => {
+                console.log("error", error)
+            })
+            this.setState({
+                summ: [],
+                summ_data: [],
+                trans: [],
+                trans_data: [],
+                textTrans:'',
+                textSumm:'',
+                isLoading: false,
+                routes: [
+                    { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
+                    { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
+                ],
+                response: [],
+            })
+            this.componentDidMount()
+                .then(() => {
+                    this.setState({ refreshing: false });
+                });
+            this.wait(5000).then(() => {
+                this.setState({ refreshing: false });
+                //Alert message
+            });
+        }   
+    }
+ 
     summ_download = () => {
         PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE)
         // create a path you want to write to
@@ -677,17 +863,18 @@ export default class App extends React.Component {
                         //   onPress: () => console.log("Cancel Pressed"),
                         //   style: "cancel"
                         // },
-                        { text: "OK", onPress: () => console.log("OK Pressed") }
+                        { text: "OK", onPress: () => console.log("Summary Download Success") }
                     ],
                     { cancelable: false }
                 );
-                console.log('FILE WRITTEN!');
+                console.log('sumFILE WRITTEN!');
             })
             .catch((err) => {
                 console.log(err.message);
             });
     }
-
+    
+    //forRefresh
     _onRefresh = () => {
         console.log("refresh")
         this.setState({ refreshing: true });
@@ -707,17 +894,12 @@ export default class App extends React.Component {
         });
     }
 
+    //forTabScreen
     _handleIndexChange = index => this.setState({ index });
-
     _renderScene = BottomNavigation.SceneMap({
         trans: this.Transcript,
         summ: this.Summary,
     });
-
-    //   _goBack = () => console.log('Went back');
-    //   _onSearch = () => console.log('Searching');
-    //   _onMore = () => console.log('Shown more');
-
 
     render() {
         let time = this.state;
@@ -725,10 +907,8 @@ export default class App extends React.Component {
         let { play, pause } = this.state;
         const { isLoading } = this.state; //文件
 
-
-
         // if (this.props.route.params.l) {
-            if (!this.state.isLoading) {
+            if (this.state.isLoading) {
 
                 return (
                     <View style={{ flex: 1 }}>
@@ -962,3 +1142,60 @@ export default class App extends React.Component {
     }
 
 }
+
+const styles = StyleSheet.create({
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22,
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 30,
+        alignItems: "center",
+        shadowColor: "blue",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 5,
+        shadowRadius: 3.84,
+        elevation: 100
+    },
+    openButton: {
+        backgroundColor: "#F194FF",
+        borderRadius: 10,
+        padding: 10,
+        elevation: 2
+    },
+    textStyle: {
+        color: "white",
+        fontWeight: "bold",
+        textAlign: "center"
+    },
+    modalText: {
+        marginBottom: 15,
+        textAlign: "center",
+        color: "black",
+        fontSize: 18,
+        fontWeight: "bold",
+    },
+    editBorder: {
+        borderColor:"lightblue",
+        borderWidth:2,
+        fontSize: 16, 
+        color:"black"
+    },
+    noBorder: {
+        borderWidth:0,
+        fontSize: 16, color:"black"
+    },
+    transNoBorder: {
+        paddingTop:15,
+        borderWidth:0,
+        fontSize: 16, color:"black"
+    },
+});
