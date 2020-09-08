@@ -7,6 +7,7 @@ import { Button } from 'react-native-elements';
 import Overlay from 'react-native-modal-overlay';
 import { DrawerActions, useNavigation } from '@react-navigation/native';
 import { sha256 } from 'react-native-sha256';
+import AsyncStorage from '@react-native-community/async-storage';
 // import { useState } from 'react';
 
 class Inputs extends Component {
@@ -78,9 +79,14 @@ class Inputs extends Component {
       sha256(this.state.TextInputPassword).then(hash => {
          this.setState({ text:hash })
       });
-
+      
+      var email_rule = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/;
+      //console.log(email_rule.test(this.state.TextInputEmail))
+    
       if (this.state.TextInputEmail != null && this.state.TextInputEmail != "") {
           if (this.state.TextInputPassword != null && this.state.TextInputPassword != "") {
+               if (email_rule.test(this.state.TextInputEmail)) {
+
                   const { TextInputEmail }  = this.state ;
                   //const { TextInputPassword }  = this.state ;
                   const{ text } = this.state ;
@@ -115,8 +121,23 @@ class Inputs extends Component {
                // 副頁面傳遞參數給history
                   this.props.navigation.navigate('歷史紀錄',{
                      user : this.state.TextInputEmail.replace("@gmail.com", "") ,
-               })
+                  })
+                  // this.props.navigation.openDrawer({
+                  //    user : this.state.TextInputEmail.replace("@gmail.com", "") ,
+                  // })
                // const { username } = (result['Email'].replace("@gmail.com", " "));
+
+           
+                  try {
+                    AsyncStorage.setItem('userName', user)
+                    console.log("storage"+user)
+                  } catch (e) {
+                     console.log("error",error)
+                     // saving error
+                  }
+               } else{
+                  Alert.alert("Email格式錯誤");
+               }
          } else {
                Alert.alert("密碼不能為空");
            }
@@ -124,6 +145,7 @@ class Inputs extends Component {
       } else {
          Alert.alert("帳號不能為空");
          } 
+    
 
    }
 
@@ -288,14 +310,4 @@ const styles = StyleSheet.create({
 //註冊模組: +Firebase(不用，存到server的db即可)
 //第一頁instruction(可用overlay)
 //切換頁面功能
-//第二頁面進入錄音介面(含建立錄音檔)
-//第二頁下拉式選單
-//yarn add react-native-modal-overlay
-/*<Overlay visible={this.state.modalVisible} onClose={this.onClose} closeOnTouchOutside>
-               <Icon
-                   name='book-open'
-                   type='feather'
-                   color='black'/>
-               <Text h4>Instructions</Text>
-            </Overlay>*/
-//() => this.register(this.state.email, this.state.password)
+//第二頁面進入錄音介面(含建
