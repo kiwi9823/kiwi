@@ -192,7 +192,9 @@ dependencies {
 //     implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
 // implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0-alpha02'
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    compile project(':react-native-ssh-sftp')
+    implementation project(':react-native-ssh-sftp')
+    implementation 'com.facebook.fresco:fresco:2.0.0'
+implementation 'com.facebook.fresco:animated-gif:2.0.0'
     
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules

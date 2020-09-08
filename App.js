@@ -17,7 +17,7 @@ import Sound from 'react-native-sound';
 
 import recordpage from './pages/record';
 import soundpage from './pages/sound';
-import wordpage from './pages/wordfile';
+import wordpage from './pages/WordFile';
 import historypage from './pages/history';
 import launchpage from './pages/Launch';
 import registerpage from './pages/register';
@@ -25,7 +25,7 @@ import registerpage from './pages/register';
 import { color } from 'react-native-reanimated';
 
 
-
+console.disableYellowBox = true;
 // function Mainpage({ navigation }) {
 //   return (
 //     <View style={{ flex: 1 }}>

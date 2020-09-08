@@ -1,19 +1,20 @@
 import React, { Component } from 'react';
-import { useIsFocused, StyleSheet, View, BackHandler, Modal, TouchableHighlight, SafeAreaView, TextInput, FlatList, ActivityIndicator, ScrollView, RefreshControl, PermissionsAndroid, Alert } from 'react-native';
+import { Share, useIsFocused, StyleSheet, View, BackHandler, Modal, TouchableHighlight, SafeAreaView, TextInput, FlatList, ActivityIndicator, ScrollView, RefreshControl, PermissionsAndroid, Alert } from 'react-native';
 import { Header, Slider, Icon, Input, Button } from 'react-native-elements'
 import Sound from 'react-native-sound'
 import { DrawerActions, useNavigation } from '@react-navigation/native';
 import { BottomNavigation, Text, FAB, Portal, Provider } from 'react-native-paper';
 import RNFS from 'react-native-fs';
 import { cos } from 'react-native-reanimated';
+import Highlighter from 'react-native-highlight-words';
 
 let whoosh;
 
 export default class App extends React.Component {
-    constructor(props) {
-        super(props);
+    // constructor(props) {
+    //     super(props);
 
-        this.state = {
+        state = {
             volume: 0.5,
             seconds: 0, //秒數
             totalMin: '', //總分鐘
@@ -27,6 +28,7 @@ export default class App extends React.Component {
 
             summ: [],
             summ_data: [],
+            summ_HighL:[],
             trans: [],
             trans_data: [],
             transInputDisableHolder:false,
@@ -34,18 +36,38 @@ export default class App extends React.Component {
             borderStatus: false ,
             textTrans:'',
             textSumm:'',
-
-            isLoading: false,
+            refreshing: false,
+            // isLoading: false,
             index: 0,
             routes: [
-                { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
-                { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
+                { key: 'trans', title: '逐字稿', icon: 'text-to-speech', color: '#5C9FCC' },
+                { key: 'summ', title: '摘要稿', icon: 'text-short', color: '#296C99' },
             ],
             response: [],
             numberOfsummary: 'EX: "5"',
             text: '',
-        };
+        // };
     }
+
+        //forRefresh
+        _onRefresh = () => {
+            console.log("refresh")
+            this.setState({ refreshing: true });
+            this.componentDidMount()
+                .then(() => {
+                    this.setState({ refreshing: false });
+                });
+            this.wait(9000).then(() => {
+                this.setState({ refreshing: false });
+                //Alert message
+            });
+        }
+    
+        wait = (timeout) => {
+            return new Promise(resolve => {
+                setTimeout(resolve, timeout);
+            });
+        }
 
     async componentDidMount() {
         //音檔位置
@@ -73,7 +95,7 @@ export default class App extends React.Component {
 
         /*用server資料的時候*/
         let formData = new FormData();
-            formData.append('userName', 'testClient');
+            formData.append('userName', this.props.route.params.username);
             formData.append('fileName', this.props.route.params.name);
 
         const response = fetch(`http://140.115.81.199:9943/textFetch`,
@@ -106,10 +128,18 @@ export default class App extends React.Component {
                 // const summSTR = JSON.stringify(json.summary).replace(/\\/g, "").split("n").join(`\n` + "- ");
                 // const summData = summSTR.replace(/['"]+/g, "- ").slice(0, -4);
                 //.replace(/\s/g, '') for space .replace(/\\/g, "") for slash(\) .replace(/-/g, "") for hyphen(-)
+                const sum = JSON.stringify(json.summary).replace(/\\/g, "").replace(/-/g, "").replace(/\s/g, "")
+                const sumHighL = sum.replace(/['"]+/g, "n").split('n')
                 const summSTR = JSON.stringify(json.summary).replace(/-/g, "").replace(/\s/g, "").split('\\n').join(`\n` + "- ")
                 const summData = ("- "+summSTR.replace(/['"]+/g, ""))
+                
 
-                this.setState({ summ: json.summary, summ_data: summData, trans: json.transcript, trans_data: transData, isLoading: true });
+                this.setState({ summ_HighL:sumHighL, summ: json.summary, summ_data: summData, trans: json.transcript, trans_data: transData, isLoading: true });
+                console.log(this.state.summ_HighL)
+                console.log(sum.replace(/['"]+/g, "n"))
+                console.log(JSON.stringify(json.summary).replace(/\\/g, "").replace(/-/g, ""))
+                console.log(JSON.stringify(json.summary).replace(/\\/g, "").replace(/-/g, "").replace(/\s/g, ""))
+                console.log("n"+JSON.stringify(json.summary).replace(/\\/g, "").replace(/-/g, "").replace(/\s/g, "").split('n'))
             });
 
 
@@ -165,8 +195,8 @@ export default class App extends React.Component {
             isLoading: false,
             index: 0,
             routes: [
-                { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
-                { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
+                { key: 'trans', title: '逐字稿', icon: 'text-to-speech', color: '#5C9FCC' },
+                { key: 'summ', title: '摘要稿', icon: 'text-short', color: '#296C99' },
             ],
             response: [],
             numberOfsummary: 'EX: "5"',
@@ -287,7 +317,7 @@ export default class App extends React.Component {
 
         if(this.state.textTrans === ''){
             let formData = new FormData();
-            formData.append('userName', 'testClient');
+            formData.append('userName', this.props.route.params.username);
             formData.append('fileName', this.props.route.params.name);
             formData.append('modCont', this.state.trans_data);                    
 
@@ -315,8 +345,8 @@ export default class App extends React.Component {
                     textSumm:'',
                     isLoading: false,
                     routes: [
-                        { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
-                        { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
+                        { key: 'trans', title: '逐字稿', icon: 'text-to-speech', color: '#5C9FCC' },
+                        { key: 'summ', title: '摘要稿', icon: 'text-short', color: '#296C99' },
                     ],
                     response: [],
                 })
@@ -331,7 +361,7 @@ export default class App extends React.Component {
         }
         else{
             let formData = new FormData();
-                formData.append('userName', 'testClient');
+                formData.append('userName', this.props.route.params.username);
                 formData.append('fileName', this.props.route.params.name);
                 formData.append('modCont', this.state.textTrans);                    
 
@@ -359,8 +389,8 @@ export default class App extends React.Component {
                 textSumm:'',
                 isLoading: false,
                 routes: [
-                    { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
-                    { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
+                    { key: 'trans', title: '逐字稿', icon: 'text-to-speech', color: '#5C9FCC' },
+                    { key: 'summ', title: '摘要稿', icon: 'text-short', color: '#296C99' },
                 ],
                 response: [],
             })
@@ -376,40 +406,46 @@ export default class App extends React.Component {
     }
 
     trans_download = () => {
-        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE)
-        // create a path you want to write to
-        // :warning: on iOS, you cannot write into `RNFS.MainBundlePath`,
-        // but `RNFS.DocumentDirectoryPath` exists on both platforms and is writable
+        // PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE)
+        // // create a path you want to write to
+        // // :warning: on iOS, you cannot write into `RNFS.MainBundlePath`,
+        // // but `RNFS.DocumentDirectoryPath` exists on both platforms and is writable
         var date = new Date().getDate(); //To get the Current Date
         var month = new Date().getMonth() + 1; //To get the Current Month
         var year = new Date().getFullYear(); //To get the Current Year
         var hours = new Date().getHours(); //To get the Current Hours
         var min = new Date().getMinutes(); //To get the Current Minutes
 
-        var path = RNFS.DownloadDirectoryPath + `/trans${this.props.route.params.name}_${year}${month}${date}_${hours}${min}.txt`;
-        console.log(path);
-        // write the file
-        RNFS.writeFile(path, this.state.trans_data, 'utf8')
-            // RNFS.writeFile(path, this.state.tran, 'utf8')
-            .then((success) => {
-                Alert.alert(
-                    "Download File",
-                    "Success!",
-                    [
-                        // {
-                        //   text: "Cancel",
-                        //   onPress: () => console.log("Cancel Pressed"),
-                        //   style: "cancel"
-                        // },
-                        { text: "OK", onPress: () => console.log("Transcript Download Success") }
-                    ],
-                    { cancelable: false }
-                );
-                console.log('FILE WRITTEN!');
-            })
-            .catch((err) => {
-                console.log(err.message);
-            });
+        // var path = RNFS.DownloadDirectoryPath + `/trans${this.props.route.params.name}_${year}${month}${date}_${hours}${min}.txt`;
+        // console.log(path);
+        // // write the file
+        // RNFS.writeFile(path, this.state.trans_data, 'utf8')
+        //     // RNFS.writeFile(path, this.state.tran, 'utf8')
+        //     .then((success) => {
+        //         Alert.alert(
+        //             "Download File",
+        //             "Success!",
+        //             [
+        //                 // {
+        //                 //   text: "Cancel",
+        //                 //   onPress: () => console.log("Cancel Pressed"),
+        //                 //   style: "cancel"
+        //                 // },
+        //                 { text: "OK", onPress: () => console.log("Transcript Download Success") }
+        //             ],
+        //             { cancelable: false }
+        //         );
+        //         console.log('FILE WRITTEN!');
+        //     })
+        //     .catch((err) => {
+        //         console.log(err.message);
+        //     });
+
+        Share.share({ message: this.state.trans_data, title : `trans${this.props.route.params.name}_${year}/${month}/${date}_${hours}:${min}.txt` })
+        //after successful share return result
+        .then(result => console.log(result))
+        //If any thing goes wrong it comes here
+        .catch(errorMsg => console.log(errorMsg));
     }
 
     Transcript = () => {
@@ -435,13 +471,19 @@ export default class App extends React.Component {
                     }
                                 
                 <ScrollView>
+
                     <TextInput 
                         onChangeText={text=> this.onChangedTrans(text)}
                         multiline={true} 
                         editable={this.state.transInputDisableHolder}     
                         style={ this.state.borderStatus ? styles.editBorder : styles.transNoBorder}                                               
                     >
-                        {this.state.trans_data+"\n"}
+                        
+                        <Highlighter
+                    highlightStyle={{backgroundColor: 'yellow'}}
+                    searchWords={this.state.summ_HighL}
+                    textToHighlight={this.state.trans_data+"\n"}
+                />
                     </TextInput>
                 </ScrollView>
 
@@ -456,12 +498,12 @@ export default class App extends React.Component {
                                 // { icon: 'plus', onPress: () => console.log('Pressed add') },
                                 {
                                     icon: 'format-title',
-                                    label: 'Edit Text',
+                                    label: '編輯',
                                     onPress: () => this.editTrans(),
                                 },
                                 {
-                                    icon: 'download',
-                                    label: 'Download',
+                                    icon: 'share',
+                                    label: '匯出',
                                     onPress: () => this.trans_download(),
                                 },
                             ]}
@@ -562,8 +604,6 @@ export default class App extends React.Component {
                     <Text style={{ textAlign: "center", color: 'grey', paddingTop:15}}>** 可在右下功能鍵中自由設定摘要句數</Text>
                     }
 
-                    
-
                 <ScrollView>
                     <TextInput 
                         onChangeText={text=> this.onChangedSumm(text)}
@@ -597,18 +637,18 @@ export default class App extends React.Component {
                             actions={[
                                 {
                                     icon: 'sort',
-                                    label: 'Setting',
+                                    label: '設定',
                                     onPress: () => setModalVisible(true),
                                 },
                                 {
                                     //   icon: 'format-title',
                                     icon: 'format-title',
-                                    label: 'Edit Text',
+                                    label: '編輯',
                                     onPress: () => this.editSumm(),
                                 },
                                 {
-                                    icon: 'download',
-                                    label: 'Download',
+                                    icon: 'share',
+                                    label: '匯出',
                                     onPress: () => this.summ_download(),
                                 },
                             ]}
@@ -630,7 +670,7 @@ export default class App extends React.Component {
                     >
                         <View style={styles.centeredView}>
                             <View style={styles.modalView}>
-                                <Text style={styles.modalText}>Place a Number</Text>
+                                <Text style={styles.modalText}>請輸入摘要句數：</Text>
                                 <TextInput
                                     keyboardType='numeric'
                                     style={{ height: 40, width: 130, backgroundColor: 'lightgray', marginBottom: 15, paddingHorizontal: 10 }}
@@ -646,7 +686,7 @@ export default class App extends React.Component {
                                             this.getNumofSummary(this.state.numberOfsummary)
                                         }}
                                     >
-                                        <Text style={styles.textStyle}>Submit</Text>
+                                        <Text style={styles.textStyle}>提交</Text>
                                     </TouchableHighlight>
 
                                     <TouchableHighlight
@@ -655,7 +695,7 @@ export default class App extends React.Component {
                                             setModalVisible(false);
                                         }}
                                     >
-                                        <Text style={styles.textStyle}>Close</Text>
+                                        <Text style={styles.textStyle}>關閉</Text>
                                     </TouchableHighlight>
                                 </View>
                             </View>
@@ -689,7 +729,7 @@ export default class App extends React.Component {
         console.log(this.state.numberOfsummary);
 
         let formData = new FormData();
-            formData.append('userName', 'testClient');
+            formData.append('userName', this.props.route.params.username);
             formData.append('fileName', this.props.route.params.name);
 
         fetch(`http://140.115.81.199:9943/sumSet/${numberOfsummary}`,
@@ -714,8 +754,8 @@ export default class App extends React.Component {
             trans_data: [],
             isLoading: false,
             routes: [
-                { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
-                { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
+                { key: 'trans', title: '逐字稿', icon: 'text-to-speech', color: '#5C9FCC' },
+                { key: 'summ', title: '摘要稿', icon: 'text-short', color: '#296C99' },
             ],
             response: [],
         })
@@ -750,7 +790,7 @@ export default class App extends React.Component {
 
         if(this.state.textSumm === ''){
             let formData = new FormData();
-            formData.append('userName', 'testClient');
+            formData.append('userName', this.props.route.params.username);
             formData.append('fileName', this.props.route.params.name);
             formData.append('modCont', this.state.summ_data);                    
 
@@ -778,8 +818,8 @@ export default class App extends React.Component {
                 textSumm:'',
                 isLoading: false,
                 routes: [
-                    { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
-                    { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
+                    { key: 'trans', title: '逐字稿', icon: 'text-to-speech', color: '#5C9FCC' },
+                    { key: 'summ', title: '摘要稿', icon: 'text-short', color: '#296C99' },
                 ],
                 response: [],
             })
@@ -794,7 +834,7 @@ export default class App extends React.Component {
         }
         else{  
             let formData = new FormData();
-                formData.append('userName', 'testClient');
+                formData.append('userName', this.props.route.params.username);
                 formData.append('fileName', this.props.route.params.name);
                 formData.append('modCont', this.state.textSumm);                    
 
@@ -822,8 +862,8 @@ export default class App extends React.Component {
                 textSumm:'',
                 isLoading: false,
                 routes: [
-                    { key: 'trans', title: 'Transcript', icon: 'text-to-speech', color: '#5C9FCC' },
-                    { key: 'summ', title: 'Summary', icon: 'text-short', color: '#296C99' },
+                    { key: 'trans', title: '逐字稿', icon: 'text-to-speech', color: '#5C9FCC' },
+                    { key: 'summ', title: '摘要稿', icon: 'text-short', color: '#296C99' },
                 ],
                 response: [],
             })
@@ -839,60 +879,47 @@ export default class App extends React.Component {
     }
  
     summ_download = () => {
-        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE)
-        // create a path you want to write to
-        // :warning: on iOS, you cannot write into `RNFS.MainBundlePath`,
-        // but `RNFS.DocumentDirectoryPath` exists on both platforms and is writable
+        // PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE)
+        // // create a path you want to write to
+        // // :warning: on iOS, you cannot write into `RNFS.MainBundlePath`,
+        // // but `RNFS.DocumentDirectoryPath` exists on both platforms and is writable
         var date = new Date().getDate(); //To get the Current Date
         var month = new Date().getMonth() + 1; //To get the Current Month
         var year = new Date().getFullYear(); //To get the Current Year
         var hours = new Date().getHours(); //To get the Current Hours
         var min = new Date().getMinutes(); //To get the Current Minutes
 
-        var path = RNFS.DownloadDirectoryPath + `/summ${this.props.route.params.name}_${year}${month}${date}_${hours}${min}.txt`;
-        console.log(path);
-        // write the file
-        RNFS.writeFile(path, this.state.summ_data, 'utf8')
-            .then((success) => {
-                Alert.alert(
-                    "Download File",
-                    "Success!",
-                    [
-                        // {
-                        //   text: "Cancel",
-                        //   onPress: () => console.log("Cancel Pressed"),
-                        //   style: "cancel"
-                        // },
-                        { text: "OK", onPress: () => console.log("Summary Download Success") }
-                    ],
-                    { cancelable: false }
-                );
-                console.log('sumFILE WRITTEN!');
-            })
-            .catch((err) => {
-                console.log(err.message);
-            });
+        // var path = RNFS.DownloadDirectoryPath + `/summ${this.props.route.params.name}_${year}${month}${date}_${hours}${min}.txt`;
+        // console.log(path);
+        // // write the file
+        // RNFS.writeFile(path, this.state.summ_data, 'utf8')
+        //     .then((success) => {
+        //         Alert.alert(
+        //             "摘要檔案下載",
+        //             "成功!",
+        //             [
+        //                 // {
+        //                 //   text: "Cancel",
+        //                 //   onPress: () => console.log("Cancel Pressed"),
+        //                 //   style: "cancel"
+        //                 // },
+        //                 { text: "關閉", onPress: () => console.log("Summary Download Success") }
+        //             ],
+        //             { cancelable: false }
+        //         );
+        //         console.log('sumFILE WRITTEN!');
+        //     })
+        //     .catch((err) => {
+        //         console.log(err.message);
+        //     });
+        Share.share({ message: this.state.summ_data, title : `summ${this.props.route.params.name}_${year}/${month}/${date}_${hours}:${min}.txt` })
+        //after successful share return result
+        .then(result => console.log(result))
+        //If any thing goes wrong it comes here
+        .catch(errorMsg => console.log(errorMsg));
     }
     
-    //forRefresh
-    _onRefresh = () => {
-        console.log("refresh")
-        this.setState({ refreshing: true });
-        this.componentDidMount()
-            .then(() => {
-                this.setState({ refreshing: false });
-            });
-        this.wait(5000).then(() => {
-            this.setState({ refreshing: false });
-            //Alert message
-        });
-    }
 
-    wait = (timeout) => {
-        return new Promise(resolve => {
-            setTimeout(resolve, timeout);
-        });
-    }
 
     //forTabScreen
     _handleIndexChange = index => this.setState({ index });
@@ -931,10 +958,7 @@ export default class App extends React.Component {
                                     color: 'white'
                                 }
                             }}
-                        // rightComponent={{ 
-                        //     icon: 'cw', type: 'entypo', color: '#fff', underlayColor: '#3488C0', 
-                        //     onPress: () => {this._onRefresh()} 
-                        // }}
+                            //rightComponent={{ icon: 'refresh', color: '#fff', underlayColor: '#3488C0', onPress: () => this._onRefresh() }}
                         />
 
                         <View style={{ flex: 1, backgroundColor: 'white', flexDirection: 'column', justifyContent: 'space-around' }}>
@@ -1009,7 +1033,7 @@ export default class App extends React.Component {
                                         color: 'white'
                                     }
                                 }}
-                            // rightComponent={{ icon: 'export', type: 'entypo', color: '#fff', underlayColor: '#3488C0', onPress: () => { } }}
+                                //rightComponent={{ icon: 'refresh', color: '#fff', underlayColor: '#3488C0', onPress: () => this._onRefresh() }}
                             />
 
                             <View style={{ flex: 1, backgroundColor: 'white', flexDirection: 'column', justifyContent: 'space-around' }}>
@@ -1048,7 +1072,10 @@ export default class App extends React.Component {
 
                             <View >
                                 {/* <Text style={{textAlign:'center', fontSize:20, fontWeight:"bold", padding:30}}>Network Error!!!</Text> */}
-                                <Text style={{ textAlign: 'center', marginTop: 30, fontSize: 15, color: "grey" }}>pull down to refresh</Text>
+                                <Text style={{ textAlign: 'center', margin: 30, fontSize: 15, color: "grey" }}>下拉重新整理</Text>
+                                <Text style={{ textAlign: 'center', fontSize: 18, color: "black", textDecorationLine:"underline"}}> 以下幾點可能造成無法顯示文字稿：</Text>
+                                <View style={{alignSelf:"center",  width:300}}>
+                                    <Text style={{ textAlign: 'left', marginTop:15, fontSize: 16, color: "black" }}>1. 音檔尚未上傳{'\n'}2. 網路異常{'\n'}...</Text></View>
                             </View>
 
                             {/* {isLoading && 
@@ -1064,81 +1091,6 @@ export default class App extends React.Component {
                     </ ScrollView>
                 );
             }
-        // }
-        // else {
-        //     return (
-        //         < ScrollView
-        //         refreshControl={
-        //             < RefreshControl
-        //                 refreshing={this.state.refreshing}
-        //                 onRefresh={this._onRefresh()}
-        //             />}
-        //         >
-        //             <View style={{ flex: 1 }}>
-        //                 <Header
-        //                     placement="left"
-        //                     backgroundColor='transparent'
-        //                     containerStyle={{ width: '100%', backgroundColor: '#3488C0', borderBottomWidth: 0 }}
-        //                     leftComponent={{
-        //                         icon: 'close', color: '#fff', underlayColor: '#3488C0', size: 30,
-        //                         onPress: () => this.backAction()
-        //                     }}
-
-        //                     centerComponent={{
-        //                         text: this.props.route.params.showname,
-        //                         style: {
-        //                             fontSize: 22,
-        //                             fontWeight: 'bold',
-        //                             fontFamily: 'Fonts.Lato',
-        //                             color: 'white'
-        //                         }
-        //                     }}
-        //                 // rightComponent={{ icon: 'export', type: 'entypo', color: '#fff', underlayColor: '#3488C0', onPress: () => { } }}
-        //                 />
-
-        //                 <View style={{ flex: 1, backgroundColor: 'white', flexDirection: 'column', justifyContent: 'space-around' }}>
-        //                     {/* time&icon */}
-        //                     <View style={{ flex: 1, paddingTop: 10, marginHorizontal: 30, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
-        //                         <View>
-        //                             <Text style={{ fontSize: 18 }}>{time.nowMin}:{time.nowSec}/{time.totalMin}:{time.totalSec}</Text>
-        //                         </View>
-        //                         {/* play&pause icon */}
-        //                         <View>
-        //                             {
-        //                                 play ?
-        //                                     <Icon name='controller-paus' type='entypo' size={25} color="black" onPress={this._pause} />
-        //                                     :
-        //                                     <Icon name='controller-play' type='entypo' size={30} color="black" onPress={this._play} />
-        //                             }
-        //                         </View>
-        //                     </View>
-        //                     {/* Slider */}
-        //                     <View style={{ flex: 1, paddingHorizontal: 10, justifyContent: 'space-around' }}>
-        //                         <Slider
-        //                             // disabled //禁止滑动
-        //                             maximumTrackTintColor={'#ccc'} //右侧轨道的颜色
-        //                             minimumTrackTintColor={'skyblue'} //左侧轨道的颜色
-        //                             maximumValue={this.state.maximumValue} //滑块最大值
-        //                             minimumValue={0} //滑块最小值
-        //                             value={this.state.seconds}
-        //                             onSlidingComplete={(value) => { //用户完成更改值时调用的回调（例如，当滑块被释放时）
-        //                                 value = parseInt(value);
-        //                                 this._getNowTime(value)
-        //                                 // 设置播放时间
-        //                                 whoosh.setCurrentTime(value);
-        //                             }} />
-        //                     </View>
-        //                 </View>
-
-        //                 <View style={{ flex: 1 }} >
-        //                     {/* <Text style={{textAlign:'center', fontSize:20, fontWeight:"bold", padding:30}}>Network Error!!!</Text> */}
-        //                     <Text style={{ textAlign: 'center', marginTop: 30, fontSize: 15, color: "grey" }}>音檔尚未上傳！</Text>
-        //                 </View>
-
-        //             </View>
-        //         </ ScrollView>
-        //     )
-        // }
     }
 
 }
