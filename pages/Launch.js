@@ -11,33 +11,33 @@ export default class Launch extends Component {
 
     regis = () => {
             //actual use
-        // AsyncStorage.getItem('userName').then((user)=>{
-        //     console.log(user)
-        //     if(user !== null) {
-        //         // value previously stored
-        //         // Alert.alert("你已註冊過");
-        //         Snackbar.show({
-        //             text: '你已註冊過',
-        //             duration: Snackbar.LENGTH_LONG,
-        //             // backgroundColor:"lightgrey",
-        //             textColor:"white",
+        AsyncStorage.getItem('userName').then((user)=>{
+            console.log(user)
+            if(user !== null) {
+                // value previously stored
+                // Alert.alert("你已註冊過");
+                Snackbar.show({
+                    text: '你已註冊過',
+                    duration: Snackbar.LENGTH_LONG,
+                    // backgroundColor:"lightgrey",
+                    textColor:"white",
              
-        //             // action: {
-        //             //   text: 'UNDO',
-        //             //   textColor: 'red',
-        //             //   onPress: () => { /* Do something. */ },
-        //             // },
-        //           });
+                    // action: {
+                    //   text: 'UNDO',
+                    //   textColor: 'red',
+                    //   onPress: () => { /* Do something. */ },
+                    // },
+                  });
 
-        //     } else {
-        //         const { navigation } = this.props;
-        //         navigation.navigate('註冊頁面');
-        //     }
-        // })
+            } else {
+                const { navigation } = this.props;
+                navigation.navigate('註冊頁面');
+            }
+        })
 
-            //for test register.js
-        const { navigation } = this.props;
-        navigation.navigate('註冊頁面');
+        //     //for test register.js
+        // const { navigation } = this.props;
+        // navigation.navigate('註冊頁面');
     }
     
     enterapp = () => {
