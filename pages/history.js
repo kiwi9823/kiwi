@@ -286,7 +286,8 @@ export default class history extends Component {
                     })
                     .then(result => {
                         console.log("success", result)
-                        this.timeout(200000, fetch(`http://140.115.81.199:9943/textDown`,
+                        // this.timeout(200000, fetch(`http://140.115.81.199:9943/textDown`,
+                        fetch(`http://140.115.81.199:9943/textDown`,
                             {
                                 method: 'POST',
                                 headers: {
@@ -294,7 +295,7 @@ export default class history extends Component {
                                     'Content-Type': 'multipart/form-data'
                                 },
                                 body: formData2
-                            }))
+                            })
                             .then(response => {
                                 console.log(response.status);
 

@@ -10,7 +10,7 @@ import Snackbar from 'react-native-snackbar';
 export default class Launch extends Component {
 
     regis = () => {
-            //actual use
+            // actual use
         AsyncStorage.getItem('userName').then((user)=>{
             console.log(user)
             if(user !== null) {
@@ -35,7 +35,7 @@ export default class Launch extends Component {
             }
         })
 
-        //     //for test register.js
+        // //     //for test register.js
         // const { navigation } = this.props;
         // navigation.navigate('註冊頁面');
     }
